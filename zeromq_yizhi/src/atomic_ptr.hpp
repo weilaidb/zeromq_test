@@ -1,18 +1,27 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -27,6 +36,10 @@
 #define ZMQ_ATOMIC_PTR_MUTEX
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_PTR_X86
+#elif defined __ARM_ARCH_7A__ && defined __GNUC__
+#define ZMQ_ATOMIC_PTR_ARM
+#elif defined __tile__
+#define ZMQ_ATOMIC_PTR_TILE
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_PTR_WINDOWS
 #elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
@@ -41,6 +54,8 @@
 #include "windows.hpp"
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
 #include <atomic.h>
+#elif defined ZMQ_ATOMIC_PTR_TILE
+#include <arch/atomic.h>
 #endif
 
 namespace zmq
@@ -79,12 +94,28 @@ namespace zmq
             return (T*) InterlockedExchangePointer ((PVOID*) &ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_swap_ptr (&ptr, val_);
+#elif defined ZMQ_ATOMIC_PTR_TILE
+            return (T*) arch_atomic_exchange (&ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
             __asm__ volatile (
                 "lock; xchg %0, %2"
                 : "=r" (old), "=m" (ptr)
                 : "m" (ptr), "0" (val_));
+            return old;
+#elif defined ZMQ_ATOMIC_PTR_ARM
+            T* old;
+            unsigned int flag;
+            __asm__ volatile (
+                "       dmb     sy\n\t"
+                "1:     ldrex   %1, [%3]\n\t"
+                "       strex   %0, %4, [%3]\n\t"
+                "       teq     %0, #0\n\t"
+                "       bne     1b\n\t"
+                "       dmb     sy\n\t"
+                : "=&r"(flag), "=&r"(old), "+Qo"(ptr)
+                : "r"(&ptr), "r"(val_)
+                : "cc");
             return old;
 #elif defined ZMQ_ATOMIC_PTR_MUTEX
             sync.lock ();
@@ -108,12 +139,31 @@ namespace zmq
                 (volatile PVOID*) &ptr, val_, cmp_);
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_cas_ptr (&ptr, cmp_, val_);
+#elif defined ZMQ_ATOMIC_PTR_TILE
+            return (T*) arch_atomic_val_compare_and_exchange (&ptr, cmp_, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
             __asm__ volatile (
                 "lock; cmpxchg %2, %3"
                 : "=a" (old), "=m" (ptr)
                 : "r" (val_), "m" (ptr), "0" (cmp_)
+                : "cc");
+            return old;
+#elif defined ZMQ_ATOMIC_PTR_ARM
+            T *old;
+            unsigned int flag;
+            __asm__ volatile (
+                "       dmb     sy\n\t"
+                "1:     ldrex   %1, [%3]\n\t"
+                "       mov     %0, #0\n\t"
+                "       teq     %1, %4\n\t"
+                "       it      eq\n\t"
+                "       strexeq %0, %5, [%3]\n\t"
+                "       teq     %0, #0\n\t"
+                "       bne     1b\n\t"
+                "       dmb     sy\n\t"
+                : "=&r"(flag), "=&r"(old), "+Qo"(ptr)
+                : "r"(&ptr), "r"(cmp_), "r"(val_)
                 : "cc");
             return old;
 #elif defined ZMQ_ATOMIC_PTR_MUTEX
@@ -150,6 +200,9 @@ namespace zmq
 #endif
 #if defined ZMQ_ATOMIC_PTR_X86
 #undef ZMQ_ATOMIC_PTR_X86
+#endif
+#if defined ZMQ_ATOMIC_PTR_ARM
+#undef ZMQ_ATOMIC_PTR_ARM
 #endif
 #if defined ZMQ_ATOMIC_PTR_MUTEX
 #undef ZMQ_ATOMIC_PTR_MUTEX

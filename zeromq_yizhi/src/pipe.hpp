@@ -1,18 +1,27 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -21,192 +30,202 @@
 #ifndef __ZMQ_PIPE_HPP_INCLUDED__
 #define __ZMQ_PIPE_HPP_INCLUDED__
 
-#include "../include/zmq.h"
-
-#include "stdint.hpp"
-#include "array.hpp"
-#include "ypipe.hpp"
-#include "swap.hpp"
+#include "msg.hpp"
+#include "ypipe_base.hpp"
 #include "config.hpp"
 #include "object.hpp"
+#include "stdint.hpp"
+#include "array.hpp"
+#include "blob.hpp"
 
 namespace zmq
 {
 
-    //  Creates a pipe. Returns pointer to reader and writer objects.
-    void create_pipe (object_t *reader_parent_, object_t *writer_parent_,
-        uint64_t hwm_, int64_t swap_size_, class reader_t **reader_,
-        class writer_t **writer_);
+    class object_t;
+    class pipe_t;
 
-    //  The shutdown mechanism for pipe works as follows: Either endpoint
-    //  (or even both of them) can ask pipe to terminate by calling 'terminate'
-    //  method. Pipe then terminates in asynchronous manner. When the part of
-    //  the shutdown tied to the endpoint is done it triggers 'terminated'
-    //  event. When endpoint processes the event and returns, associated
-    //  reader/writer object is deallocated.
+    //  Create a pipepair for bi-directional transfer of messages.
+    //  First HWM is for messages passed from first pipe to the second pipe.
+    //  Second HWM is for messages passed from second pipe to the first pipe.
+    //  Delay specifies how the pipe behaves when the peer terminates. If true
+    //  pipe receives all the pending messages before terminating, otherwise it
+    //  terminates straight away.
+    //  If conflate is true, only the most recently arrived message could be
+    //  read (older messages are discarded)
+    int pipepair (zmq::object_t *parents_ [2], zmq::pipe_t* pipes_ [2],
+        int hwms_ [2], bool conflate_ [2]);
 
-    typedef ypipe_t <zmq_msg_t, message_pipe_granularity> pipe_t;
-
-    struct i_reader_events
+    struct i_pipe_events
     {
-        virtual ~i_reader_events () {}
+        virtual ~i_pipe_events () {}
 
-        virtual void terminated (class reader_t *pipe_) = 0;
-        virtual void activated (class reader_t *pipe_) = 0;
-        virtual void delimited (class reader_t *pipe_) = 0;
+        virtual void read_activated (zmq::pipe_t *pipe_) = 0;
+        virtual void write_activated (zmq::pipe_t *pipe_) = 0;
+        virtual void hiccuped (zmq::pipe_t *pipe_) = 0;
+        virtual void pipe_terminated (zmq::pipe_t *pipe_) = 0;
     };
 
-    class reader_t : public object_t, public array_item_t
+    //  Note that pipe can be stored in three different arrays.
+    //  The array of inbound pipes (1), the array of outbound pipes (2) and
+    //  the generic array of pipes to deallocate (3).
+
+    class pipe_t :
+        public object_t,
+        public array_item_t <1>,
+        public array_item_t <2>,
+        public array_item_t <3>
     {
-        friend void create_pipe (object_t*, object_t*, uint64_t,
-            int64_t, reader_t**, writer_t**);
-        friend class writer_t;
+        //  This allows pipepair to create pipe objects.
+        friend int pipepair (zmq::object_t *parents_ [2], zmq::pipe_t* pipes_ [2],
+            int hwms_ [2], bool conflate_ [2]);
 
     public:
 
-        //  Specifies the object to get events from the reader.
-        void set_event_sink (i_reader_events *endpoint_);
+        //  Specifies the object to send events to.
+        void set_event_sink (i_pipe_events *sink_);
+
+        //  Pipe endpoint can store an opaque ID to be used by its clients.
+        void set_identity (const blob_t &identity_);
+        blob_t get_identity ();
+
+        blob_t get_credential () const;
 
         //  Returns true if there is at least one message to read in the pipe.
         bool check_read ();
 
         //  Reads a message to the underlying pipe.
-        bool read (zmq_msg_t *msg_);
+        bool read (msg_t *msg_);
 
-        //  Ask pipe to terminate.
-        void terminate ();
-
-    private:
-
-        reader_t (class object_t *parent_, pipe_t *pipe_, uint64_t lwm_);
-        ~reader_t ();
-
-        //  To be called only by writer itself!
-        void set_writer (class writer_t *writer_);
-
-        //  Command handlers.
-        void process_activate_reader ();
-        void process_pipe_term_ack ();
-
-        //  Returns true if the message is delimiter; false otherwise.
-        static bool is_delimiter (zmq_msg_t &msg_);
-
-        //  True, if pipe can be read from.
-        bool active;
-
-        //  The underlying pipe.
-        pipe_t *pipe;
-
-        //  Pipe writer associated with the other side of the pipe.
-        class writer_t *writer;
-
-        //  Low watermark for in-memory storage (in bytes).
-        uint64_t lwm;
-
-        //  Number of messages read so far.
-        uint64_t msgs_read;
-
-        //  Sink for the events (either the socket of the session).
-        i_reader_events *sink;
-
-        //  True is 'terminate' method was called or delimiter
-        //  was read from the pipe.
-        bool terminating;
-
-        reader_t (const reader_t&);
-        const reader_t &operator = (const reader_t&);
-    };
-
-    struct i_writer_events
-    {
-        virtual ~i_writer_events () {}
-
-        virtual void terminated (class writer_t *pipe_) = 0;
-        virtual void activated (class writer_t *pipe_) = 0;
-    };
-
-    class writer_t : public object_t, public array_item_t
-    {
-        friend void create_pipe (object_t*, object_t*, uint64_t,
-            int64_t, reader_t**, writer_t**);
-
-    public:
-
-        //  Specifies the object to get events from the writer.
-        void set_event_sink (i_writer_events *endpoint_);
-
-        //  Checks whether messages can be written to the pipe.
-        //  If writing the message would cause high watermark and (optionally)
-        //  if the swap is full, the function returns false.
-        bool check_write (zmq_msg_t *msg_);
+        //  Checks whether messages can be written to the pipe. If writing
+        //  the message would cause high watermark the function returns false.
+        bool check_write ();
 
         //  Writes a message to the underlying pipe. Returns false if the
         //  message cannot be written because high watermark was reached.
-        bool write (zmq_msg_t *msg_);
+        bool write (msg_t *msg_);
 
-        //  Remove unfinished part of a message from the pipe.
+        //  Remove unfinished parts of the outbound message from the pipe.
         void rollback ();
 
         //  Flush the messages downsteam.
         void flush ();
 
-        //  Ask pipe to terminate.
-        void terminate ();
+        //  Temporaraily disconnects the inbound message stream and drops
+        //  all the messages on the fly. Causes 'hiccuped' event to be generated
+        //  in the peer.
+        void hiccup ();
 
+        // Ensure the pipe wont block on receiving pipe_term.
+        void set_nodelay ();
+
+        //  Ask pipe to terminate. The termination will happen asynchronously
+        //  and user will be notified about actual deallocation by 'terminated'
+        //  event. If delay is true, the pending messages will be processed
+        //  before actual shutdown.
+        void terminate (bool delay_);
+
+        // set the high water marks.
+        void set_hwms (int inhwm_, int outhwm_);
+
+        // check HWM
+        bool check_hwm () const;
     private:
 
-        writer_t (class object_t *parent_, pipe_t *pipe_, reader_t *reader_,
-            uint64_t hwm_, int64_t swap_size_);
-        ~writer_t ();
+        //  Type of the underlying lock-free pipe.
+        typedef ypipe_base_t <msg_t> upipe_t;
 
         //  Command handlers.
-        void process_activate_writer (uint64_t msgs_read_);
+        void process_activate_read ();
+        void process_activate_write (uint64_t msgs_read_);
+        void process_hiccup (void *pipe_);
         void process_pipe_term ();
+        void process_pipe_term_ack ();
 
-        //  Tests whether underlying pipe is already full. The swap is not
-        //  taken into account.
-        bool pipe_full ();
+        //  Handler for delimiter read from the pipe.
+        void process_delimiter ();
 
-        //  True, if this object can be written to. Undelying ypipe may be full
-        //  but as long as there's swap space available, this flag is true.
-        bool active;
+        //  Constructor is private. Pipe can only be created using
+        //  pipepair function.
+        pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
+            int inhwm_, int outhwm_, bool conflate_);
 
-        //  The underlying pipe.
-        pipe_t *pipe;
+        //  Pipepair uses this function to let us know about
+        //  the peer pipe object.
+        void set_peer (pipe_t *pipe_);
 
-        //  Pipe reader associated with the other side of the pipe.
-        reader_t *reader;
+        //  Destructor is private. Pipe objects destroy themselves.
+        ~pipe_t ();
 
-        //  High watermark for in-memory storage (in bytes).
-        uint64_t hwm;
+        //  Underlying pipes for both directions.
+        upipe_t *inpipe;
+        upipe_t *outpipe;
 
-        //  Last confirmed number of messages read from the pipe.
-        //  The actual number can be higher.
+        //  Can the pipe be read from / written to?
+        bool in_active;
+        bool out_active;
+
+        //  High watermark for the outbound pipe.
+        int hwm;
+
+        //  Low watermark for the inbound pipe.
+        int lwm;
+
+        //  Number of messages read and written so far.
         uint64_t msgs_read;
-
-        //  Number of messages we have written so far.
         uint64_t msgs_written;
 
-        //  Pointer to the message swap. If NULL, messages are always
-        //  kept in main memory.
-        swap_t *swap;
+        //  Last received peer's msgs_read. The actual number in the peer
+        //  can be higher at the moment.
+        uint64_t peers_msgs_read;
 
-        //  Sink for the events (either the socket or the session).
-        i_writer_events *sink;
+        //  The pipe object on the other side of the pipepair.
+        pipe_t *peer;
 
-        //  If true, swap is active. New messages are to be written to the swap.
-        bool swapping;
+        //  Sink to send events to.
+        i_pipe_events *sink;
 
-        //  If true, there's a delimiter to be written to the pipe after the
-        //  swap is empied.
-        bool pending_delimiter;
+        //  States of the pipe endpoint:
+        //  active: common state before any termination begins,
+        //  delimiter_received: delimiter was read from pipe before
+        //      term command was received,
+        //  waiting_fo_delimiter: term command was already received
+        //      from the peer but there are still pending messages to read,
+        //  term_ack_sent: all pending messages were already read and
+        //      all we are waiting for is ack from the peer,
+        //  term_req_sent1: 'terminate' was explicitly called by the user,
+        //  term_req_sent2: user called 'terminate' and then we've got
+        //      term command from the peer as well.
+        enum {
+            active,
+            delimiter_received,
+            waiting_for_delimiter,
+            term_ack_sent,
+            term_req_sent1,
+            term_req_sent2
+        } state;
 
-        //  True is 'terminate' method was called of 'pipe_term' command
-        //  arrived from the reader.
-        bool terminating;
+        //  If true, we receive all the pending inbound messages before
+        //  terminating. If false, we terminate immediately when the peer
+        //  asks us to.
+        bool delay;
 
-        writer_t (const writer_t&);
-        const writer_t &operator = (const writer_t&);
+        //  Identity of the writer. Used uniquely by the reader side.
+        blob_t identity;
+
+        //  Pipe's credential.
+        blob_t credential;
+
+        //  Returns true if the message is delimiter; false otherwise.
+        static bool is_delimiter (const msg_t &msg_);
+
+        //  Computes appropriate low watermark from the given high watermark.
+        static int compute_lwm (int hwm_);
+
+        const bool conflate;
+
+        //  Disable copying.
+        pipe_t (const pipe_t&);
+        const pipe_t &operator = (const pipe_t&);
     };
 
 }

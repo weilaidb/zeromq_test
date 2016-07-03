@@ -7,106 +7,59 @@ INCLUDEPATH += include \
 LIBS += -lWs2_32 \
         -lRpcrt4
 
-SOURCES += main.cpp \
-    src/zmq_listener.cpp \
-    src/zmq_init.cpp \
-    src/zmq_engine.cpp \
-    src/zmq_connecter.cpp \
-    src/zmq.cpp \
-    src/xsub.cpp \
-    src/xreq.cpp \
-    src/xrep.cpp \
-    src/xpub.cpp \
-    src/uuid.cpp \
-    src/trie.cpp \
-    src/transient_session.cpp \
-    src/thread.cpp \
-    src/tcp_socket.cpp \
-    src/tcp_listener.cpp \
-    src/tcp_connecter.cpp \
-    src/swap.cpp \
-    src/sub.cpp \
-    src/socket_base.cpp \
-    src/signaler.cpp \
-    src/session.cpp \
-    src/select.cpp \
-    src/req.cpp \
-    src/rep.cpp \
-    src/reaper.cpp \
-    src/push.cpp \
-    src/pull.cpp \
-    src/pub.cpp \
-    src/poller_base.cpp \
-    src/poll.cpp \
-    src/pipe.cpp \
-    src/pgm_socket.cpp \
-    src/pgm_sender.cpp \
-    src/pgm_receiver.cpp \
-    src/pair.cpp \
-    src/own.cpp \
-    src/options.cpp \
-    src/object.cpp \
-    src/named_session.cpp \
-    src/mailbox.cpp \
-    src/lb.cpp \
-    src/kqueue.cpp \
-    src/ip.cpp \
-    src/io_thread.cpp \
-    src/io_object.cpp \
-    src/fq.cpp \
-    src/err.cpp \
-    src/epoll.cpp \
-    src/encoder.cpp \
-    src/dist.cpp \
-    src/devpoll.cpp \
-    src/device.cpp \
-    src/decoder.cpp \
-    src/ctx.cpp \
-    src/connect_session.cpp \
-    src/command.cpp \
-    src/clock.cpp
-
-OTHER_FILES += \
-    src/version.rc
-
 HEADERS += \
-    src/zmq_listener.hpp \
-    src/zmq_init.hpp \
-    src/zmq_engine.hpp \
-    src/zmq_connecter.hpp \
+    include/zmq_utils.h \
+    include/zmq.h \
     src/yqueue.hpp \
+    src/ypipe_conflate.hpp \
+    src/ypipe_base.hpp \
     src/ypipe.hpp \
     src/xsub.hpp \
-    src/xreq.hpp \
-    src/xrep.hpp \
     src/xpub.hpp \
     src/wire.hpp \
     src/windows.hpp \
-    src/uuid.hpp \
+    src/v2_protocol.hpp \
+    src/v2_encoder.hpp \
+    src/v2_decoder.hpp \
+    src/v1_encoder.hpp \
+    src/v1_decoder.hpp \
     src/trie.hpp \
-    src/transient_session.hpp \
+    src/tipc_listener.hpp \
+    src/tipc_connecter.hpp \
+    src/tipc_address.hpp \
     src/thread.hpp \
-    src/tcp_socket.hpp \
     src/tcp_listener.hpp \
     src/tcp_connecter.hpp \
-    src/swap.hpp \
+    src/tcp_address.hpp \
+    src/tcp.hpp \
     src/sub.hpp \
+    src/stream_engine.hpp \
+    src/stream.hpp \
     src/stdint.hpp \
+    src/socks_connecter.hpp \
+    src/socks.hpp \
     src/socket_base.hpp \
     src/signaler.hpp \
-    src/session.hpp \
-    src/semaphore.hpp \
+    src/session_base.hpp \
     src/select.hpp \
+    src/router.hpp \
     src/req.hpp \
     src/rep.hpp \
     src/reaper.hpp \
+    src/raw_encoder.hpp \
+    src/raw_decoder.hpp \
+    src/random.hpp \
     src/push.hpp \
     src/pull.hpp \
     src/pub.hpp \
+    src/proxy.hpp \
+    src/precompiled.hpp \
     src/poller_base.hpp \
     src/poller.hpp \
     src/poll.hpp \
     src/platform.hpp \
+    src/plain_server.hpp \
+    src/plain_client.hpp \
     src/pipe.hpp \
     src/pgm_socket.hpp \
     src/pgm_sender.hpp \
@@ -115,20 +68,30 @@ HEADERS += \
     src/own.hpp \
     src/options.hpp \
     src/object.hpp \
-    src/named_session.hpp \
+    src/null_mechanism.hpp \
+    src/norm_engine.hpp \
     src/mutex.hpp \
-    src/msg_content.hpp \
+    src/mtrie.hpp \
+    src/msg.hpp \
+    src/metadata.hpp \
+    src/mechanism.hpp \
     src/mailbox.hpp \
     src/likely.hpp \
     src/lb.hpp \
     src/kqueue.hpp \
+    src/ipc_listener.hpp \
+    src/ipc_connecter.hpp \
+    src/ipc_address.hpp \
     src/ip.hpp \
     src/io_thread.hpp \
     src/io_object.hpp \
     src/i_poll_events.hpp \
-    src/i_inout.hpp \
     src/i_engine.hpp \
-    src/gcc_421_char_traits.hpp \
+    src/i_encoder.hpp \
+    src/i_decoder.hpp \
+    src/gssapi_server.hpp \
+    src/gssapi_mechanism_base.hpp \
+    src/gssapi_client.hpp \
     src/fq.hpp \
     src/fd.hpp \
     src/err.hpp \
@@ -136,10 +99,12 @@ HEADERS += \
     src/encoder.hpp \
     src/dist.hpp \
     src/devpoll.hpp \
-    src/device.hpp \
     src/decoder.hpp \
+    src/dealer.hpp \
+    src/dbuffer.hpp \
+    src/curve_server.hpp \
+    src/curve_client.hpp \
     src/ctx.hpp \
-    src/connect_session.hpp \
     src/config.hpp \
     src/command.hpp \
     src/clock.hpp \
@@ -147,6 +112,92 @@ HEADERS += \
     src/atomic_ptr.hpp \
     src/atomic_counter.hpp \
     src/array.hpp \
-    include/zmq_utils.h \
-    include/zmq.hpp \
-    include/zmq.h
+    src/address.hpp
+
+OTHER_FILES += \
+    src/platform.hpp.in \
+    src/libzmq.vers \
+    src/libzmq.pc.in \
+    src/libzmq.pc.cmake.in
+
+SOURCES += \
+    src/zmq_utils.cpp \
+    src/zmq.cpp \
+    src/xsub.cpp \
+    src/xpub.cpp \
+    src/v2_encoder.cpp \
+    src/v2_decoder.cpp \
+    src/v1_encoder.cpp \
+    src/v1_decoder.cpp \
+    src/trie.cpp \
+    src/tipc_listener.cpp \
+    src/tipc_connecter.cpp \
+    src/tipc_address.cpp \
+    src/thread.cpp \
+    src/tcp_listener.cpp \
+    src/tcp_connecter.cpp \
+    src/tcp_address.cpp \
+    src/tcp.cpp \
+    src/sub.cpp \
+    src/stream_engine.cpp \
+    src/stream.cpp \
+    src/socks_connecter.cpp \
+    src/socks.cpp \
+    src/socket_base.cpp \
+    src/signaler.cpp \
+    src/session_base.cpp \
+    src/select.cpp \
+    src/router.cpp \
+    src/req.cpp \
+    src/rep.cpp \
+    src/reaper.cpp \
+    src/raw_encoder.cpp \
+    src/raw_decoder.cpp \
+    src/random.cpp \
+    src/push.cpp \
+    src/pull.cpp \
+    src/pub.cpp \
+    src/proxy.cpp \
+    src/precompiled.cpp \
+    src/poller_base.cpp \
+    src/poll.cpp \
+    src/plain_server.cpp \
+    src/plain_client.cpp \
+    src/pipe.cpp \
+    src/pgm_socket.cpp \
+    src/pgm_sender.cpp \
+    src/pgm_receiver.cpp \
+    src/pair.cpp \
+    src/own.cpp \
+    src/options.cpp \
+    src/object.cpp \
+    src/null_mechanism.cpp \
+    src/norm_engine.cpp \
+    src/mtrie.cpp \
+    src/msg.cpp \
+    src/metadata.cpp \
+    src/mechanism.cpp \
+    src/mailbox.cpp \
+    src/lb.cpp \
+    src/kqueue.cpp \
+    src/ipc_listener.cpp \
+    src/ipc_connecter.cpp \
+    src/ipc_address.cpp \
+    src/ip.cpp \
+    src/io_thread.cpp \
+    src/io_object.cpp \
+    src/gssapi_server.cpp \
+    src/gssapi_mechanism_base.cpp \
+    src/gssapi_client.cpp \
+    src/fq.cpp \
+    src/err.cpp \
+    src/epoll.cpp \
+    src/dist.cpp \
+    src/devpoll.cpp \
+    src/dealer.cpp \
+    src/curve_server.cpp \
+    src/curve_client.cpp \
+    src/ctx.cpp \
+    src/clock.cpp \
+    src/address.cpp \
+    main.cpp

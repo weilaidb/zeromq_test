@@ -1,48 +1,58 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "select.hpp"
+#if defined ZMQ_USE_SELECT
+
 #include "platform.hpp"
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
-#endif
-
-#include <string.h>
-#include <algorithm>
-
-#if defined ZMQ_HAVE_HPUX
+#elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #elif defined ZMQ_HAVE_OPENVMS
 #include <sys/types.h>
 #include <sys/time.h>
-#elif !defined ZMQ_HAVE_WINDOWS
+#else
 #include <sys/select.h>
 #endif
 
-#include "select.hpp"
+#include <string.h>
+#include <algorithm>
+
 #include "err.hpp"
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::select_t::select_t () :
+zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
+    ctx(ctx_),
     maxfd (retired_fd),
     retired (false),
     stopping (false)
@@ -137,12 +147,17 @@ void zmq::select_t::reset_pollout (handle_t handle_)
 
 void zmq::select_t::start ()
 {
-    worker.start (worker_routine, this);
+    ctx.start_thread (worker, worker_routine, this);
 }
 
 void zmq::select_t::stop ()
 {
     stopping = true;
+}
+
+int zmq::select_t::max_fds ()
+{
+    return FD_SETSIZE;
 }
 
 void zmq::select_t::loop ()
@@ -158,17 +173,23 @@ void zmq::select_t::loop ()
         memcpy (&exceptfds, &source_set_err, sizeof source_set_err);
 
         //  Wait for events.
+#ifdef ZMQ_HAVE_OSX
+        struct timeval tv = {(long) (timeout / 1000), timeout % 1000 * 1000};
+#else
         struct timeval tv = {(long) (timeout / 1000),
             (long) (timeout % 1000 * 1000)};
-        int rc = select (maxfd + 1, &readfds, &writefds, &exceptfds,
-            timeout ? &tv : NULL);
-
+#endif
 #ifdef ZMQ_HAVE_WINDOWS
+        int rc = select (0, &readfds, &writefds, &exceptfds,
+            timeout ? &tv : NULL);
         wsa_assert (rc != SOCKET_ERROR);
 #else
-        if (rc == -1 && errno == EINTR)
+        int rc = select (maxfd + 1, &readfds, &writefds, &exceptfds,
+            timeout ? &tv : NULL);
+        if (rc == -1) {
+            errno_assert (errno == EINTR);
             continue;
-        errno_assert (rc != -1);
+        }
 #endif
 
         //  If there are no events (i.e. it's a timeout) there's no point
@@ -210,3 +231,4 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
     return (entry.fd == retired_fd);
 }
 
+#endif

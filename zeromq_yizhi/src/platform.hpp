@@ -29,11 +29,15 @@
 
 #define ZMQ_HAVE_WINDOWS
 #define ZMQ_HAVE_MINGW32
+//#define ZMQ_USE_KQUEUE
+#define ZMQ_USE_SELECT
+//#define ZMQ_USE_EPOLL
+//#define ZMQ_USE_DEVPOLL
 
 #include "windows.h"
 #include "winsock2.h"
 #include "zmq.h"
-#include "zmq.hpp"
+//#include "zmq.hpp"
 #include "rpcdce.h"
 
 #endif

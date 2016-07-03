@@ -1,141 +1,51 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
+#include <new>
 
-#include "../include/zmq.h"
+#include <string>
+#include <stdio.h>
 
-#include "tcp_listener.hpp"
 #include "platform.hpp"
-#include "ip.hpp"
+#include "tcp_listener.hpp"
+#include "stream_engine.hpp"
+#include "io_thread.hpp"
+#include "session_base.hpp"
 #include "config.hpp"
 #include "err.hpp"
+#include "ip.hpp"
+#include "tcp.hpp"
+#include "socket_base.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
-
-zmq::tcp_listener_t::tcp_listener_t () :
-    has_file (false),
-    s (retired_fd)
-{
-    memset (&addr, 0, sizeof (addr));
-    addr_len = 0;
-}
-
-zmq::tcp_listener_t::~tcp_listener_t ()
-{
-    if (s != retired_fd)
-        close ();
-}
-
-int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_,
-    int backlog_)
-{
-    //  IPC protocol is not supported on Windows platform.
-    if (strcmp (protocol_, "tcp") != 0 ) {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-
-    //  Convert the interface into sockaddr_in structure.
-    int rc = resolve_ip_interface (&addr, &addr_len, addr_);
-    if (rc != 0)
-        return rc;
-
-    //  Create a listening socket.
-    s = socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
-    if (s == INVALID_SOCKET) {
-        wsa_error_to_errno ();
-        return -1;
-    }
-
-    //  Allow reusing of the address.
-    int flag = 1;
-    rc = setsockopt (s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
-        (const char*) &flag, sizeof (int));
-    wsa_assert (rc != SOCKET_ERROR);
-
-    //  Set the non-blocking flag.
-    u_long uflag = 1;
-    rc = ioctlsocket (s, FIONBIO, &uflag);
-    wsa_assert (rc != SOCKET_ERROR);
-
-    //  Bind the socket to the network interface and port.
-    rc = bind (s, (struct sockaddr*) &addr, addr_len);
-    if (rc == SOCKET_ERROR) {
-        wsa_error_to_errno ();
-        return -1;
-    }
-
-    //  Listen for incomming connections.
-    rc = listen (s, backlog_);
-    if (rc == SOCKET_ERROR) {
-        wsa_error_to_errno ();
-        return -1;
-    }
-
-    return 0;
-}
-
-int zmq::tcp_listener_t::close ()
-{
-    zmq_assert (s != retired_fd);
-    int rc = closesocket (s);
-    wsa_assert (rc != SOCKET_ERROR);
-    s = retired_fd;
-    return 0;
-}
-
-zmq::fd_t zmq::tcp_listener_t::get_fd ()
-{
-    return s;
-}
-
-zmq::fd_t zmq::tcp_listener_t::accept ()
-{
-    zmq_assert (s != retired_fd);
-
-    //  Accept one incoming connection.
-    fd_t sock = ::accept (s, NULL, NULL);
-    if (sock == INVALID_SOCKET && 
-          (WSAGetLastError () == WSAEWOULDBLOCK ||
-          WSAGetLastError () == WSAECONNRESET))
-        return retired_fd;
-
-    zmq_assert (sock != INVALID_SOCKET);
-
-    // Set to non-blocking mode.
-    unsigned long argp = 1;
-    int rc = ioctlsocket (sock, FIONBIO, &argp);
-    wsa_assert (rc != SOCKET_ERROR);
-
-    //  Disable Nagle's algorithm.
-    int flag = 1;
-    rc = setsockopt (sock, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
-        sizeof (int));
-    wsa_assert (rc != SOCKET_ERROR);
-
-    return sock;
-}
-
+#include "windows.hpp"
 #else
-
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -143,229 +53,277 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
-
-#ifndef ZMQ_HAVE_OPENVMS
-#include <sys/un.h>
 #endif
 
 #ifdef ZMQ_HAVE_OPENVMS
 #include <ioctl.h>
 #endif
 
-zmq::tcp_listener_t::tcp_listener_t () :
-    has_file (false),
-    s (retired_fd)
+zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
+      socket_base_t *socket_, const options_t &options_) :
+    own_t (io_thread_, options_),
+    io_object_t (io_thread_),
+    s (retired_fd),
+    socket (socket_)
 {
-    memset (&addr, 0, sizeof (addr));
 }
 
 zmq::tcp_listener_t::~tcp_listener_t ()
 {
-    if (s != retired_fd)
-        close ();
+    zmq_assert (s == retired_fd);
 }
 
-int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_,
-    int backlog_)
+void zmq::tcp_listener_t::process_plug ()
 {
-    if (strcmp (protocol_, "tcp") == 0 ) {
-
-        //  Resolve the sockaddr to bind to.
-        int rc = resolve_ip_interface (&addr, &addr_len, addr_);
-        if (rc != 0)
-            return -1;
-
-        //  Create a listening socket.
-        s = open_socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
-        if (s == -1)
-            return -1;
-
-        //  Allow reusing of the address.
-        int flag = 1;
-        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
-        errno_assert (rc == 0);
-
-        //  Set the non-blocking flag.
-#ifdef ZMQ_HAVE_OPENVMS
-    	flag = 1;
-    	rc = ioctl (s, FIONBIO, &flag);
-        errno_assert (rc != -1);
-#else
-    	flag = fcntl (s, F_GETFL, 0);
-    	if (flag == -1)
-            flag = 0;
-    	rc = fcntl (s, F_SETFL, flag | O_NONBLOCK);
-        errno_assert (rc != -1);
-#endif
-
-        //  Bind the socket to the network interface and port.
-        rc = bind (s, (struct sockaddr*) &addr, addr_len);
-        if (rc != 0) {
-            int err = errno;
-            if (close () != 0)
-                return -1;
-            errno = err;
-            return -1;
-        }
-
-        //  Listen for incomming connections.
-        rc = listen (s, backlog_);
-        if (rc != 0) {
-            int err = errno;
-            if (close () != 0)
-                return -1;
-            errno = err;
-            return -1;
-        }
-
-        return 0;
-    }
-#ifndef ZMQ_HAVE_OPENVMS
-    else if (strcmp (protocol_, "ipc") == 0) {
-
-        //  Get rid of the file associated with the UNIX domain socket that
-        //  may have been left behind by the previous run of the application.
-        ::unlink (addr_);
-
-        //  Convert the address into sockaddr_un structure.
-        int rc = resolve_local_path (&addr, &addr_len, addr_);
-        if (rc != 0)
-            return -1;
-
-        //  Create a listening socket.
-        s = socket (AF_UNIX, SOCK_STREAM, 0);
-        if (s == -1)
-            return -1;
-
-        //  Set the non-blocking flag.
-        int flag = fcntl (s, F_GETFL, 0);
-        if (flag == -1) 
-            flag = 0;
-        rc = fcntl (s, F_SETFL, flag | O_NONBLOCK);
-        errno_assert (rc != -1);
-
-        //  Bind the socket to the file path.
-        rc = bind (s, (struct sockaddr*) &addr, addr_len);
-        if (rc != 0) {
-            int err = errno;
-            if (close () != 0)
-                return -1;
-            errno = err;
-            return -1;
-        }
-        has_file = true;
-
-        //  Listen for incomming connections.
-        rc = listen (s, backlog_);
-        if (rc != 0) {
-            int err = errno;
-            if (close () != 0)
-                return -1;
-            errno = err;
-            return -1;
-        }
-
-        return 0;
-    }
-#endif
-    else {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }    
+    //  Start polling for incoming connections.
+    handle = add_fd (s);
+    set_pollin (handle);
 }
 
-int zmq::tcp_listener_t::close ()
+void zmq::tcp_listener_t::process_term (int linger_)
+{
+    rm_fd (handle);
+    close ();
+    own_t::process_term (linger_);
+}
+
+void zmq::tcp_listener_t::in_event ()
+{
+    fd_t fd = accept ();
+
+    //  If connection was reset by the peer in the meantime, just ignore it.
+    //  TODO: Handle specific errors like ENFILE/EMFILE etc.
+    if (fd == retired_fd) {
+        socket->event_accept_failed (endpoint, zmq_errno());
+        return;
+    }
+
+    tune_tcp_socket (fd);
+    tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+
+    // remember our fd for ZMQ_SRCFD in messages
+    socket->set_fd(fd);
+
+    //  Create the engine object for this connection.
+    stream_engine_t *engine = new (std::nothrow)
+        stream_engine_t (fd, options, endpoint);
+    alloc_assert (engine);
+
+    //  Choose I/O thread to run connecter in. Given that we are already
+    //  running in an I/O thread, there must be at least one available.
+    io_thread_t *io_thread = choose_io_thread (options.affinity);
+    zmq_assert (io_thread);
+
+    //  Create and launch a session object.
+    session_base_t *session = session_base_t::create (io_thread, false, socket,
+        options, NULL);
+    errno_assert (session);
+    session->inc_seqnum ();
+    launch_child (session);
+    send_attach (session, engine, false);
+    socket->event_accepted (endpoint, fd);
+}
+
+void zmq::tcp_listener_t::close ()
 {
     zmq_assert (s != retired_fd);
+#ifdef ZMQ_HAVE_WINDOWS
+    int rc = closesocket (s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
     int rc = ::close (s);
-    if (rc != 0)
-        return -1;
-    s = retired_fd;
-
-#ifndef ZMQ_HAVE_OPENVMS
-    //  If there's an underlying UNIX domain socket, get rid of the file it
-    //  is associated with.
-    struct sockaddr_un *su = (struct sockaddr_un*) &addr;
-    if (AF_UNIX == su->sun_family && has_file) {
-        rc = ::unlink(su->sun_path);
-        if (rc != 0)
-            return -1;
-    }
+    errno_assert (rc == 0);
 #endif
-
-    return 0;
+    socket->event_closed (endpoint, s);
+    s = retired_fd;
 }
 
-zmq::fd_t zmq::tcp_listener_t::get_fd ()
+int zmq::tcp_listener_t::get_address (std::string &addr_)
 {
-    return s;
+    // Get the details of the TCP socket
+    struct sockaddr_storage ss;
+#ifdef ZMQ_HAVE_HPUX
+    int sl = sizeof (ss);
+#else
+    socklen_t sl = sizeof (ss);
+#endif
+    int rc = getsockname (s, (struct sockaddr *) &ss, &sl);
+
+    if (rc != 0) {
+        addr_.clear ();
+        return rc;
+    }
+
+    tcp_address_t addr ((struct sockaddr *) &ss, sl);
+    return addr.to_string (addr_);
+}
+
+int zmq::tcp_listener_t::set_address (const char *addr_)
+{
+    //  Convert the textual address into address structure.
+    int rc = address.resolve (addr_, true, options.ipv6);
+    if (rc != 0)
+        return -1;
+
+    //  Create a listening socket.
+    s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
+
+    //  IPv6 address family not supported, try automatic downgrade to IPv4.
+    if (s == zmq::retired_fd && address.family () == AF_INET6
+    && errno == EAFNOSUPPORT
+    && options.ipv6) {
+        rc = address.resolve (addr_, true, false);
+        if (rc != 0)
+            return rc;
+        s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    }
+
+#ifdef ZMQ_HAVE_WINDOWS
+    if (s == INVALID_SOCKET) {
+        errno = wsa_error_to_errno (WSAGetLastError ());
+        return -1;
+    }
+#if !defined _WIN32_WCE
+    //  On Windows, preventing sockets to be inherited by child processes.
+    BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
+#endif
+#else
+    if (s == -1)
+        return -1;
+#endif
+
+    //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
+    //  Switch it on in such cases.
+    if (address.family () == AF_INET6)
+        enable_ipv4_mapping (s);
+
+    // Set the IP Type-Of-Service for the underlying socket
+    if (options.tos != 0)
+        set_ip_type_of_service (s, options.tos);
+
+    //  Set the socket buffer limits for the underlying socket.
+    if (options.sndbuf != 0)
+        set_tcp_send_buffer (s, options.sndbuf);
+    if (options.rcvbuf != 0)
+        set_tcp_receive_buffer (s, options.rcvbuf);
+
+    //  Allow reusing of the address.
+    int flag = 1;
+#ifdef ZMQ_HAVE_WINDOWS
+    rc = setsockopt (s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
+        (const char*) &flag, sizeof (int));
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
+    errno_assert (rc == 0);
+#endif
+
+    address.to_string (endpoint);
+
+    //  Bind the socket to the network interface and port.
+    rc = bind (s, address.addr (), address.addrlen ());
+#ifdef ZMQ_HAVE_WINDOWS
+    if (rc == SOCKET_ERROR) {
+        errno = wsa_error_to_errno (WSAGetLastError ());
+        goto error;
+    }
+#else
+    if (rc != 0)
+        goto error;
+#endif
+
+    //  Listen for incoming connections.
+    rc = listen (s, options.backlog);
+#ifdef ZMQ_HAVE_WINDOWS
+    if (rc == SOCKET_ERROR) {
+        errno = wsa_error_to_errno (WSAGetLastError ());
+        goto error;
+    }
+#else
+    if (rc != 0)
+        goto error;
+#endif
+
+    socket->event_listening (endpoint, s);
+    return 0;
+
+error:
+    int err = errno;
+    close ();
+    errno = err;
+    return -1;
 }
 
 zmq::fd_t zmq::tcp_listener_t::accept ()
 {
+    //  The situation where connection cannot be accepted due to insufficient
+    //  resources is considered valid and treated by ignoring the connection.
+    //  Accept one connection and deal with different failure modes.
     zmq_assert (s != retired_fd);
 
-    //  Accept one incoming connection.
-    fd_t sock = ::accept (s, NULL, NULL);
-
-#if (defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD || \
-     defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_OSX || \
-     defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_NETBSD || \
-     defined ZMQ_HAVE_CYGWIN)
-    if (sock == -1 && 
-        (errno == EAGAIN || errno == EWOULDBLOCK || 
-         errno == EINTR || errno == ECONNABORTED))
-        return retired_fd;
-#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_AIX)
-    if (sock == -1 && 
-        (errno == EWOULDBLOCK || errno == EINTR || 
-         errno == ECONNABORTED || errno == EPROTO))
-        return retired_fd;
-#elif defined ZMQ_HAVE_HPUX
-    if (sock == -1 && 
-        (errno == EAGAIN || errno == EWOULDBLOCK || 
-         errno == EINTR || errno == ECONNABORTED || errno == ENOBUFS))
-        return retired_fd;
-#elif defined ZMQ_HAVE_QNXNTO 
-    if (sock == -1 && 
-        (errno == EWOULDBLOCK || errno == EINTR || errno == ECONNABORTED))
-        return retired_fd;
-#endif
-
-    errno_assert (sock != -1); 
-
-    // Set to non-blocking mode.
-#ifdef ZMQ_HAVE_OPENVMS
-    int flags = 1;
-    int rc = ioctl (sock, FIONBIO, &flags);
-    errno_assert (rc != -1);
+    struct sockaddr_storage ss;
+    memset (&ss, 0, sizeof (ss));
+#ifdef ZMQ_HAVE_HPUX
+    int ss_len = sizeof (ss);
 #else
-    int flags = fcntl (s, F_GETFL, 0);
-    if (flags == -1)
-        flags = 0;
-    int rc = fcntl (sock, F_SETFL, flags | O_NONBLOCK);
+    socklen_t ss_len = sizeof (ss);
+#endif
+    fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
+
+#ifdef ZMQ_HAVE_WINDOWS
+    if (sock == INVALID_SOCKET) {
+        wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK ||
+            WSAGetLastError () == WSAECONNRESET ||
+            WSAGetLastError () == WSAEMFILE ||
+            WSAGetLastError () == WSAENOBUFS);
+        return retired_fd;
+    }
+#if !defined _WIN32_WCE
+    //  On Windows, preventing sockets to be inherited by child processes.
+    BOOL brc = SetHandleInformation ((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
+#endif
+#else
+    if (sock == -1) {
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
+            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
+            errno == ENOBUFS || errno == ENOMEM || errno == EMFILE ||
+            errno == ENFILE);
+        return retired_fd;
+    }
+#endif
+
+    //  Race condition can cause socket not to be closed (if fork happens
+    //  between accept and this point).
+#ifdef FD_CLOEXEC
+    int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);
 #endif
 
-    struct sockaddr *sa = (struct sockaddr*) &addr;
-    if (AF_UNIX != sa->sa_family) {
-
-        //  Disable Nagle's algorithm.
-        int flag = 1;
-        rc = setsockopt (sock, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
-            sizeof (int));
-        errno_assert (rc == 0);
-
-#ifdef ZMQ_HAVE_OPENVMS
-        //  Disable delayed acknowledgements.
-        flag = 1;
-        rc = setsockopt (sock, IPPROTO_TCP, TCP_NODELACK, (char*) &flag,
-            sizeof (int));
-        errno_assert (rc != SOCKET_ERROR);
+    if (!options.tcp_accept_filters.empty ()) {
+        bool matched = false;
+        for (options_t::tcp_accept_filters_t::size_type i = 0; i != options.tcp_accept_filters.size (); ++i) {
+            if (options.tcp_accept_filters[i].match_address ((struct sockaddr *) &ss, ss_len)) {
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+#ifdef ZMQ_HAVE_WINDOWS
+            int rc = closesocket (sock);
+            wsa_assert (rc != SOCKET_ERROR);
+#else
+            int rc = ::close (sock);
+            errno_assert (rc == 0);
 #endif
+            return retired_fd;
+        }
     }
+
+    // Set the IP Type-Of-Service priority for this client socket
+    if (options.tos != 0)
+        set_ip_type_of_service (sock, options.tos);
 
     return sock;
 }
-
-#endif

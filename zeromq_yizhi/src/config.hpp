@@ -1,18 +1,27 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -26,11 +35,8 @@ namespace zmq
 
     //  Compile-time settings.
 
-    enum 
+    enum
     {
-        //  Maximum number of sockets that can be opened at the same time.
-        max_sockets = 512,
-
         //  Number of new messages in message pipe needed to trigger new memory
         //  allocation. Setting this parameter to 256 decreases the impact of
         //  memory allocation by approximately 99.6%
@@ -38,10 +44,6 @@ namespace zmq
 
         //  Commands in pipe per allocation event.
         command_pipe_granularity = 16,
-
-        //  Size in bytes of the largest message that is still copied around
-        //  rather than being reference-counted.
-        max_vsm_size = 29,
 
         //  Determines how often does socket poll for new commands when it
         //  still has unprocessed messages to handle. Thus, if it is set to 100,
@@ -66,10 +68,6 @@ namespace zmq
         //  Maximal delta between high and low watermark.
         max_wm_delta = 1024,
 
-        //  Swap inteligently batches data for writing to disk. The size of
-        //  the batch in bytes is specified by this option.
-        swap_block_size = 8192,
-
         //  Maximum number of events the I/O thread can process in one go.
         max_io_events = 256,
 
@@ -87,7 +85,15 @@ namespace zmq
         clock_precision = 1000000,
 
         //  Maximum transport data unit size for PGM (TPDU).
-        pgm_max_tpdu = 1500
+        pgm_max_tpdu = 1500,
+
+        //  On some OSes the signaler has to be emulated using a TCP
+        //  connection. In such cases following port is used.
+        //  If 0, it lets the OS choose a free port without requiring use of a 
+        //  global mutex. The original implementation of a Windows signaler 
+        //  socket used port 5905 instead of letting the OS choose a free port.
+        //  https://github.com/zeromq/libzmq/issues/1542
+        signaler_port = 0
     };
 
 }

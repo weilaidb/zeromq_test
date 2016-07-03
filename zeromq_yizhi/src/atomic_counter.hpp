@@ -1,18 +1,27 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -28,10 +37,14 @@
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_COUNTER_X86
+#elif defined __ARM_ARCH_7A__ && defined __GNUC__
+#define ZMQ_ATOMIC_COUNTER_ARM
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_COUNTER_WINDOWS
 #elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
 #define ZMQ_ATOMIC_COUNTER_ATOMIC_H
+#elif defined __tile__
+#define ZMQ_ATOMIC_COUNTER_TILE
 #else
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #endif
@@ -42,6 +55,8 @@
 #include "windows.hpp"
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
 #include <atomic.h>
+#elif defined ZMQ_ATOMIC_COUNTER_TILE
+#include <arch/atomic.h>
 #endif
 
 namespace zmq
@@ -81,12 +96,27 @@ namespace zmq
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             integer_t new_value = atomic_add_32_nv (&value, increment_);
             old_value = new_value - increment_;
+#elif defined ZMQ_ATOMIC_COUNTER_TILE
+	    old_value = arch_atomic_add (&value, increment_);
 #elif defined ZMQ_ATOMIC_COUNTER_X86
             __asm__ volatile (
                 "lock; xadd %0, %1 \n\t"
                 : "=r" (old_value), "=m" (value)
                 : "0" (increment_), "m" (value)
                 : "cc", "memory");
+#elif defined ZMQ_ATOMIC_COUNTER_ARM
+            integer_t flag, tmp;
+            __asm__ volatile (
+                "       dmb     sy\n\t"
+                "1:     ldrex   %0, [%5]\n\t"
+                "       add     %2, %0, %4\n\t"
+                "       strex   %1, %2, [%5]\n\t"
+                "       teq     %1, #0\n\t"
+                "       bne     1b\n\t"
+                "       dmb     sy\n\t"
+                : "=&r"(old_value), "=&r"(flag), "=&r"(tmp), "+Qo"(value)
+                : "Ir"(increment_), "r"(&value)
+                : "cc");
 #elif defined ZMQ_ATOMIC_COUNTER_MUTEX
             sync.lock ();
             old_value = value;
@@ -109,6 +139,10 @@ namespace zmq
             int32_t delta = - ((int32_t) decrement);
             integer_t nv = atomic_add_32_nv (&value, delta);
             return nv != 0;
+#elif defined ZMQ_ATOMIC_COUNTER_TILE
+            int32_t delta = - ((int32_t) decrement);
+            integer_t nv = arch_atomic_add (&value, delta);
+            return nv != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_X86
             integer_t oldval = -decrement;
             volatile integer_t *val = &value;
@@ -117,6 +151,20 @@ namespace zmq
                 : "0" (oldval), "m" (*val)
                 : "cc", "memory");
             return oldval != decrement;
+#elif defined ZMQ_ATOMIC_COUNTER_ARM
+            integer_t old_value, flag, tmp;
+            __asm__ volatile (
+                "       dmb     sy\n\t"
+                "1:     ldrex   %0, [%5]\n\t"
+                "       sub     %2, %0, %4\n\t"
+                "       strex   %1, %2, [%5]\n\t"
+                "       teq     %1, #0\n\t"
+                "       bne     1b\n\t"
+                "       dmb     sy\n\t"
+                : "=&r"(old_value), "=&r"(flag), "=&r"(tmp), "+Qo"(value)
+                : "Ir"(decrement), "r"(&value)
+                : "cc");
+            return old_value - decrement != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_MUTEX
             sync.lock ();
             value -= decrement;
@@ -155,6 +203,9 @@ namespace zmq
 #endif
 #if defined ZMQ_ATOMIC_COUNTER_X86
 #undef ZMQ_ATOMIC_COUNTER_X86
+#endif
+#if defined ZMQ_ATOMIC_COUNTER_ARM
+#undef ZMQ_ATOMIC_COUNTER_ARM
 #endif
 #if defined ZMQ_ATOMIC_COUNTER_MUTEX
 #undef ZMQ_ATOMIC_COUNTER_MUTEX

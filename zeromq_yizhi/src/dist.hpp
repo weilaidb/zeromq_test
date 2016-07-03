@@ -1,18 +1,27 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -29,36 +38,60 @@
 namespace zmq
 {
 
+    class pipe_t;
+    class msg_t;
+
     //  Class manages a set of outbound pipes. It sends each messages to
     //  each of them.
-    class dist_t : public i_writer_events
+    class dist_t
     {
     public:
 
-        dist_t (class own_t *sink_);
+        dist_t ();
         ~dist_t ();
 
-        void attach (writer_t *pipe_);
-        void terminate ();
-        int send (zmq_msg_t *msg_, int flags_);
+        //  Adds the pipe to the distributor object.
+        void attach (zmq::pipe_t *pipe_);
+
+        //  Activates pipe that have previously reached high watermark.
+        void activated (zmq::pipe_t *pipe_);
+
+        //  Mark the pipe as matching. Subsequent call to send_to_matching
+        //  will send message also to this pipe.
+        void match (zmq::pipe_t *pipe_);
+
+        //  Mark all pipes as non-matching.
+        void unmatch ();
+
+        //  Removes the pipe from the distributor object.
+        void pipe_terminated (zmq::pipe_t *pipe_);
+
+        //  Send the message to the matching outbound pipes.
+        int send_to_matching (zmq::msg_t *msg_);
+
+        //  Send the message to all the outbound pipes.
+        int send_to_all (zmq::msg_t *msg_);
+
         bool has_out ();
 
-        //  i_writer_events interface implementation.
-        void activated (writer_t *pipe_);
-        void terminated (writer_t *pipe_);
+        // check HWM of all pipes matching
+        bool check_hwm ();
 
     private:
 
         //  Write the message to the pipe. Make the pipe inactive if writing
         //  fails. In such a case false is returned.
-        bool write (class writer_t *pipe_, zmq_msg_t *msg_);
+        bool write (zmq::pipe_t *pipe_, zmq::msg_t *msg_);
 
         //  Put the message to all active pipes.
-        void distribute (zmq_msg_t *msg_, int flags_);
+        void distribute (zmq::msg_t *msg_);
 
         //  List of outbound pipes.
-        typedef array_t <class writer_t> pipes_t;
+        typedef array_t <zmq::pipe_t, 2> pipes_t;
         pipes_t pipes;
+
+        //  Number of all the pipes to send the next message to.
+        pipes_t::size_type matching;
 
         //  Number of active pipes. All the active pipes are located at the
         //  beginning of the pipes array. These are the pipes the messages
@@ -74,12 +107,6 @@ namespace zmq
 
         //  True if last we are in the middle of a multipart message.
         bool more;
-
-        //  Object to send events to.
-        class own_t *sink;
-
-        //  If true, termination process is already underway.
-        bool terminating;
 
         dist_t (const dist_t&);
         const dist_t &operator = (const dist_t&);

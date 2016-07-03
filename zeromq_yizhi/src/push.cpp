@@ -1,62 +1,75 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "push.hpp"
-#include "err.hpp"
 #include "pipe.hpp"
+#include "err.hpp"
+#include "msg.hpp"
 
-zmq::push_t::push_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
-    lb (this)
+zmq::push_t::push_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
+    socket_base_t (parent_, tid_, sid_)
 {
     options.type = ZMQ_PUSH;
-    options.requires_in = false;
-    options.requires_out = true;
 }
 
 zmq::push_t::~push_t ()
 {
 }
 
-void zmq::push_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_, const blob_t &peer_identity_)
+void zmq::push_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    zmq_assert (!inpipe_ && outpipe_);
-    lb.attach (outpipe_);
+    // subscribe_to_all_ is unused
+    (void)subscribe_to_all_;
+    //  Don't delay pipe termination as there is no one
+    //  to receive the delimiter.
+    pipe_->set_nodelay ();
+
+    zmq_assert (pipe_);
+    lb.attach (pipe_);
 }
 
-void zmq::push_t::process_term (int linger_)
+void zmq::push_t::xwrite_activated (pipe_t *pipe_)
 {
-    lb.terminate ();
-    socket_base_t::process_term (linger_);
+    lb.activated (pipe_);
 }
 
-int zmq::push_t::xsend (zmq_msg_t *msg_, int flags_)
+void zmq::push_t::xpipe_terminated (pipe_t *pipe_)
 {
-    return lb.send (msg_, flags_);
+    lb.pipe_terminated (pipe_);
+}
+
+int zmq::push_t::xsend (msg_t *msg_)
+{
+    return lb.send (msg_);
 }
 
 bool zmq::push_t::xhas_out ()
 {
     return lb.has_out ();
 }
-

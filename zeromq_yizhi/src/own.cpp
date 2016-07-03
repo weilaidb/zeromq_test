@@ -1,18 +1,27 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -80,22 +89,9 @@ void zmq::own_t::launch_child (own_t *object_)
     send_own (this, object_);
 }
 
-void zmq::own_t::launch_sibling (own_t *object_)
+void zmq::own_t::term_child (own_t *object_)
 {
-    //  At this point it is important that object is plugged in before its
-    //  owner has a chance to terminate it. Thus, 'plug' command is sent before
-    //  the 'own' command. Given that the mailbox preserves ordering of
-    //  commands, 'term' command from the owner cannot make it to the object
-    //  before the already written 'plug' command.
-
-    //  Specify the owner of the object.
-    object_->set_owner (owner);
-
-    //  Plug the object into its I/O thread.
-    send_plug (object_);
-
-    //  Make parent own the object.
-    send_own (owner, object_);
+    process_term_req (object_);
 }
 
 void zmq::own_t::process_term_req (own_t *object_)
@@ -153,6 +149,11 @@ void zmq::own_t::terminate ()
     send_term_req (owner, this);
 }
 
+bool zmq::own_t::is_terminating ()
+{
+    return terminating;
+}
+
 void zmq::own_t::process_term (int linger_)
 {
     //  Double termination should never happen.
@@ -161,7 +162,7 @@ void zmq::own_t::process_term (int linger_)
     //  Send termination request to all owned objects.
     for (owned_t::iterator it = owned.begin (); it != owned.end (); ++it)
         send_term (*it, linger_);
-    register_term_acks (owned.size ());
+    register_term_acks ((int) owned.size ());
     owned.clear ();
 
     //  Start termination process and check whether by chance we cannot
@@ -181,7 +182,7 @@ void zmq::own_t::unregister_term_ack ()
     term_acks--;
 
     //  This may be a last ack we are waiting for before termination...
-    check_term_acks (); 
+    check_term_acks ();
 }
 
 void zmq::own_t::process_term_ack ()

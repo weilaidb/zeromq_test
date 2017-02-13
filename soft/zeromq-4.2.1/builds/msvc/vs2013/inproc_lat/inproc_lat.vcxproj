@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6FF7436F-B3F6-4AE9-A3AC-CFDE8A3872A0}</ProjectGuid>
     <ProjectName>inproc_lat</ProjectName>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
@@ -70,6 +70,15 @@
     <ClCompile Include="..\..\..\..\perf\inproc_lat.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDEXE|Win32'">
+    <Link>
+      <AdditionalLibraryDirectories>D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\bin\Win32\Debug\v120_xp\dynamic</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectReference Include="..\libzmq\libzmq.vcxproj">
       <Project>{641c5f36-32ee-4323-b740-992b651cf9d6}</Project>

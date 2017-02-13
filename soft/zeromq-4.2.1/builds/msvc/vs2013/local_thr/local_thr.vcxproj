@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8EF2DF6B-6646-460F-8032-913B70FE0E94}</ProjectGuid>
     <ProjectName>local_thr</ProjectName>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">

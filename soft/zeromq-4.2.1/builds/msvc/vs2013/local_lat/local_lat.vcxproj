@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4FDB8C73-9D4A-4D87-A4A9-A7FC06DFEA57}</ProjectGuid>
     <ProjectName>local_lat</ProjectName>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
@@ -62,7 +62,7 @@
     <Import Project="$(ProjectDir)..\..\properties\$(Configuration).props" />
     <Import Project="$(ProjectDir)..\..\properties\Output.props" />
     <Import Project="$(ProjectDir)..\..\vs2015\$(ProjectName)\$(ProjectName).props" />
-  </ImportGroup> 
+  </ImportGroup>
   <ItemGroup>
     <ClInclude Include="..\..\platform.hpp" />
   </ItemGroup>

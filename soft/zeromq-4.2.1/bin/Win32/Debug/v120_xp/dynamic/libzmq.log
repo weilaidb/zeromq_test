@@ -1,4 +1,4 @@
-﻿生成启动时间为 2017/2/13 21:47:20。
+﻿生成启动时间为 2017/2/13 21:49:04。
      1>项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\libzmq.vcxproj”在节点 2 上(Build 个目标)。
      1>ConfigInfo:
          ConfigurationType : DynamicLibrary
@@ -19,4 +19,4 @@
 
 生成成功。
 
-已用时间 00:00:00.74
+已用时间 00:00:00.31

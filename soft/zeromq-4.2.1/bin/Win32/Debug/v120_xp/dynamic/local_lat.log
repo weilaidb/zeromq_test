@@ -1,0 +1,24 @@
+﻿生成启动时间为 2017/2/13 21:48:52。
+     1>项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\local_lat.vcxproj”在节点 2 上(Build 个目标)。
+     1>ConfigInfo:
+         ConfigurationType : Application
+         Configuration     : DebugDEXE
+         PlatformToolset   : v120_xp
+         TargetPath        : D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\local_lat.exe
+       LinkageInfo:
+         Linkage-libzmq    : dynamic
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\..\libzmq\include\\" /I"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\\" /Zi /nologo /W3 /WX- /MP /Od /Oy- /D _CONSOLE /D _DEBUG /D UNICODE /D _UNICODE /D WIN32 /D _WIN32 /D _USING_V110_SDK71_ /Gm- /EHsc /RTC1 /MDd /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\obj\local_lat\Win32\Debug\v120_xp\dynamic\\" /Fd"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\obj\local_lat\Win32\Debug\v120_xp\dynamic\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\..\..\perf\local_lat.cpp
+         local_lat.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\local_lat.exe" /NOLOGO /LIBPATH:"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\..\libzmq\bin\Win32\Debug\v120_xp\dynamic\\" libzmq.lib Advapi32.lib Rpcrt4.lib Ws2_32.lib Iphlpapi.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\local_lat.pdb" /SUBSYSTEM:CONSOLE,"5.01" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\local_lat.lib" /MACHINE:X86 /SAFESEH "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\obj\local_lat\Win32\Debug\v120_xp\dynamic\local_lat.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\bin\Win32\Debug\v120_xp\dynamic\libzmq.lib"
+         local_lat.vcxproj -> D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\local_lat.exe
+       libzmq-info:
+         Copying libzmq.dll -> D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\bin\Win32\Debug\v120_xp\dynamic\libzmq.dll
+         Copying libzmq.pdb -> D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\bin\Win32\Debug\v120_xp\dynamic\libzmq.pdb
+     1>已完成生成项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\local_lat\local_lat.vcxproj”(Build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:01.36

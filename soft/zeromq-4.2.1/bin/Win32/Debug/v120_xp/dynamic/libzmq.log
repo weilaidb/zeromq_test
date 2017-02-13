@@ -1,0 +1,113 @@
+﻿生成启动时间为 2017/2/13 20:45:45。
+     1>项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\libzmq.vcxproj”在节点 2 上(Build 个目标)。
+     1>ConfigInfo:
+         ConfigurationType : DynamicLibrary
+         Configuration     : DebugDLL
+         PlatformToolset   : v120_xp
+         TargetPath        : D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.dll
+       OptionInfo:
+         Option-tweet      : 
+         Option-sodium     : 
+         Option-openpgm    : 
+         Option-gssapi     : 
+         Option-draftapi   : 
+         Option-usepoll    : 
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1190,5): warning MSB8030: The linker switch "Minimum Required Version" requires "SubSystem" to be set.  Without "SubSystem", the "Minimum Required Version" would not be passed to linker and could prevent to the output binary from running on older Operating Systems.
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.dll" /NOLOGO Advapi32.lib Ws2_32.lib Rpcrt4.lib Iphlpapi.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.lib" /MACHINE:X86 /SAFESEH /DLL "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\resource.res"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\address.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\client.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\clock.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\ctx.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\curve_client.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\curve_server.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\dealer.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\decoder_allocators.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\devpoll.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\dgram.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\dish.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\dist.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\epoll.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\err.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\fq.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\gather.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\gssapi_client.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\gssapi_mechanism_base.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\gssapi_server.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\io_object.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\io_thread.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\ip.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\ipc_address.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\ipc_connecter.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\ipc_listener.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\kqueue.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\lb.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\mailbox.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\mailbox_safe.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\mechanism.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\metadata.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\msg.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\mtrie.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\null_mechanism.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\object.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\options.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\own.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\pair.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\pgm_receiver.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\pgm_sender.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\pgm_socket.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\pipe.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\plain_client.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\plain_server.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\poll.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\poller_base.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\precompiled.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\proxy.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\pub.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\pull.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\push.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\radio.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\random.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\raw_decoder.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\raw_encoder.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\reaper.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\rep.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\req.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\router.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\scatter.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\select.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\server.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\session_base.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\signaler.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\socket_base.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\socket_poller.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\socks.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\socks_connecter.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\stream.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\stream_engine.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\sub.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\tcp.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\tcp_address.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\tcp_connecter.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\tcp_listener.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\thread.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\timers.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\trie.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\tweetnacl.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\udp_address.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\udp_engine.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\v1_decoder.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\v1_encoder.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\v2_decoder.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\v2_encoder.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\xpub.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\xsub.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\zmq.obj"
+         "D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\obj\libzmq\Win32\Debug\v120_xp\dynamic\zmq_utils.obj"
+            正在创建库 D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.lib 和对象 D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.exp
+         libzmq.vcxproj -> D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.dll
+     1>已完成生成项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\libzmq.vcxproj”(Build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:03.68

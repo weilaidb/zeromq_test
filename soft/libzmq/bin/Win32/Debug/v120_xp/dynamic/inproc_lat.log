@@ -1,0 +1,20 @@
+﻿生成启动时间为 2017/2/13 21:43:16。
+     1>项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\inproc_lat\inproc_lat.vcxproj”在节点 2 上(Build 个目标)。
+     1>ConfigInfo:
+         ConfigurationType : Application
+         Configuration     : DebugDEXE
+         PlatformToolset   : v120_xp
+         TargetPath        : D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\inproc_lat\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\inproc_lat.exe
+       LinkageInfo:
+         Linkage-libzmq    : dynamic
+       Link:
+         inproc_lat.vcxproj -> D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\inproc_lat\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\inproc_lat.exe
+       libzmq-info:
+         Copying libzmq.dll -> D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\bin\Win32\Debug\v120_xp\dynamic\libzmq.dll
+         Copying libzmq.pdb -> D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\bin\Win32\Debug\v120_xp\dynamic\libzmq.pdb
+     1>D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2015\libzmq.import.props(43,5): error MSB3030: 无法复制文件“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\inproc_lat\..\..\..\..\..\libzmq\bin\Win32\Debug\v120_xp\dynamic\libzmq.dll”，原因是找不到该文件。
+     1>已完成生成项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\inproc_lat\inproc_lat.vcxproj”(Build 个目标)的操作 - 失败。
+
+生成失败。
+
+已用时间 00:00:00.24

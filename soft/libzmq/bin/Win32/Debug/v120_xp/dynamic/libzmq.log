@@ -1,0 +1,22 @@
+﻿生成启动时间为 2017/2/13 21:43:15。
+     1>项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\libzmq.vcxproj”在节点 2 上(Build 个目标)。
+     1>ConfigInfo:
+         ConfigurationType : DynamicLibrary
+         Configuration     : DebugDLL
+         PlatformToolset   : v120_xp
+         TargetPath        : D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.dll
+       OptionInfo:
+         Option-tweet      : 
+         Option-sodium     : 
+         Option-openpgm    : 
+         Option-gssapi     : 
+         Option-draftapi   : 
+         Option-usepoll    : 
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1190,5): warning MSB8030: The linker switch "Minimum Required Version" requires "SubSystem" to be set.  Without "SubSystem", the "Minimum Required Version" would not be passed to linker and could prevent to the output binary from running on older Operating Systems.
+       Link:
+         libzmq.vcxproj -> D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\..\..\..\..\bin\Win32\Debug\v120_xp\dynamic\libzmq.dll
+     1>已完成生成项目“D:\Qtexample\git\zeromq2\zeromq_test\soft\zeromq-4.2.1\builds\msvc\vs2013\libzmq\libzmq.vcxproj”(Build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:00.55

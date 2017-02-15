@@ -9,7 +9,9 @@ int main (void)
     //  Socket to talk to clients  
     void *context = zmq_ctx_new ();  
     void *responder = zmq_socket (context, ZMQ_REP);  
-    int rc = zmq_bind (responder, "tcp://*:5555");  
+    //int rc = zmq_bind (responder, "tcp://*:5555");  
+    int rc = zmq_bind (responder, "inproc://my_publisher");  
+    //int rc = zmq_bind (responder, "tcp://1.2.3:5555");  
     assert (rc == 0);  
   
     while (1) {  
